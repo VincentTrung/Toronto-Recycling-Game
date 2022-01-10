@@ -1,25 +1,28 @@
 //ICS4U 
 //Mr.Loo
 //
-//Programming Challange #2
-//Text-based Responsible Recycling Sim
+//Final Summative Project
+//Racial Bias In Society
 //Created by Vincent Trung
 ///////////////////////////////////////
 import java.util.Scanner;// input
 import java.io.*; //for files
-import java.io.PrintWriter; // Import the FileWriter class
 import java.io.IOException; // Import the IOException class to handle errors
+import java.util.InputMismatchException;
+import myPackage.superpackage.*;//import the classes
 
 
 /**
 *Main is a class which hosts the necessary methods to run the game
-*created for ICS4U Assignment #2
+*created for ICS4U Final Project
 *@author Vincent Trung 
 */////////////////////////////////
 class Main {
   //create Global variables
-  private static final String bins [] = {"compost", "recycle", "garbage","other"};
-  private static String displayChoice="";
+  private static final String options [] = {"White", "Asian", "Black","Hispanic","Miscellaneous","Resources"};
+  private static String choices[] ={"login", "post","exit"};
+  private static String displayChoices="";
+  private static String displayOptions="";
   
   /**
   *This is a method simplfies the process when I want to clear the screen
@@ -72,135 +75,74 @@ class Main {
   *@param file is the file in a String we want to open and parse into an array
   *@return a 2D array of Strings generated from the rows/coloumns from the CSV
   */////////////////////////////////
-  public static String[][] readArray(String file) throws IOException{
-    try{
-			// reading from a file
-			BufferedReader infile = new BufferedReader (new FileReader(file));
-      
-      String line = infile.readLine();//similar to scanners input.nextLine()
-      int lineNum =0; //keep track of row
+  public static String readArray(String file) throws IOException{
+    writeFile(file);// incase it doens't exist
+    //intialize
+    BufferedReader br = new BufferedReader(new FileReader(file));
+    String everything =""; //start th string
 
-      //check how many elements to size the array until reachs the end
-      while (line !=null){
-        line =infile.readLine(); // move to next line
-        lineNum++; //count
-      }
-
-      int size = lineNum;//save size for creating array later
-
-
-      //second read through//
-			// reading from a file second time
-			BufferedReader infile2 = new BufferedReader (new FileReader(file));
-      lineNum=0; //reset for reading
-      line = infile2.readLine();//similar to scanners input.nextLine()
-
-      String items[] = line.split(","); //split at comma for index
-      String data[][] = new String [size][items.length]; //declare array and size
-
-      //check aslong as its not the end of file
-      while (line !=null){
-          items = line.split(",");  //split at comma in csv
-          
-          //store the values into the array 
-          for (int i =0; i <items.length;i++){
-            data[lineNum][i]=items[i];
-          }
-
-          line =infile2.readLine(); // move to next line
-          lineNum++; //next row #
-      }
-      infile.close();
-      return data;//return the complete array
-
-    }catch (FileNotFoundException e){
-			System.out.println("Incorrect filename or location. Please verify path and filename. ");
-			System.out.println("In Eclipse, data files must be placed directly in the root of the project folder.");
+    try {
+        StringBuilder sb = new StringBuilder(); //to make into string
+        String line = br.readLine(); //read the line
+        //loop through the file
+        while (line != null) {
+            sb.append(line); //append
+            sb.append(System.lineSeparator());
+            line = br.readLine();  //next line
+        }
+        everything += sb.toString();//add new text onto string
+    } finally {
+        br.close();//close the file
     }
-    return null; //handle errors of not returning
+    return everything;
   }
 
   /**
-  *This is a method that will record the name and score into a csv file
+  *This is a method that will record the name and score(money left) into a csv file
   *
   *@param file is the file we want to write to
   *@param name is the name associated with the score, to be saved in file
   *@param score is the value associated with the name, to be saved in file
   *no return 
   */////////////////////////////////
-  public static void addScore(String file, String name,int score){
+  public static void writeFile(String file, String text){
       //Try to write to file, true to not overwrite data
       try {
         FileWriter writer = new FileWriter(file,true);
         //write the information into the file and append to next line
-        writer.write("\n"+name +","+score);
+        writer.write("\n"+text);
         writer.close();//close the file
         //To catch any errors
         }catch (IOException e) {
-        }
-    }
-
-  /**
-  *This is a method that will sort the scores into the top 3 for a leaderboard
-  *returning the third highest value
-  *
-  *@param scores is a 2d array of Strings which have names/scores 
-  *@param print is a boolean that will determine whether to print a leaderboard
-  *@return int of the third highest value on the leaderboard 
-  */////////////////////////////////
-  public static int scoreboard(String scores[][], boolean print){
-    //assuming integer elements in the array and set the values to zero
-    int max1,max2,max3;
-    max1=max2=max3 = 0;  
-    int index1,index2,index3;
-    index1=index2=index3 = 0;
-
-    //loop through all the score value
-    for (int i = 0; i < scores.length; i++){
-      //change indexes and value if theres a new max
-      if (Integer.parseInt(scores[i][1]) >max1){
-        max3 = max2; 
-        max2 = max1; 
-        max1 = Integer.parseInt(scores[i][1]);
-        index3=index2;
-        index2=index1;
-        index1=i;
-      //change indexs and values below second max
-      }else if (Integer.parseInt(scores[i][1])>max2){
-        max3 = max2; 
-        max2 = Integer.parseInt(scores[i][1]);
-        index3=index2;
-        index2=i;
-      //change third index and value 
-      }else if (Integer.parseInt(scores[i][1])>max3){
-        max3 = Integer.parseInt(scores[i][1]);
-        index3=i;
+          System.out.println(e);
       }
-    }
-
-    //display the output if true
-    if (print){
-      System.out.println("");
-      System.out.println("-----------");
-      System.out.println("HIGHSCORES");
-      System.out.println("-----------");
-      System.out.printf("%5s",scores[index1][0]+": ");
-      System.out.printf("%2s\n",scores[index1][1]);
-      System.out.printf("%5s",scores[index2][0]+": ");
-      System.out.printf("%2s\n",scores[index2][1]);
-      System.out.printf("%5s",scores[index3][0]+": ");
-      System.out.printf("%2s\n",scores[index3][1]);
-      System.out.println("");
-    }
-    return max3;//highest score value to be on leaderboard
   }
 
+  /**
+  *This is a method that will record the name and score(money left) into a csv file
+  *
+  *@param file is the file we want to write to
+  *@param name is the name associated with the score, to be saved in file
+  *@param score is the value associated with the name, to be saved in file
+  *no return 
+  */////////////////////////////////
+  public static void writeFile(String file){
+      //Try to write to file, true to not overwrite data
+      try {
+        FileWriter writer = new FileWriter(file,true);
+        //write create a file
+        writer.close();//close the file
+        //To catch any errors
+        }catch (IOException e) {
+          System.out.println(e);
+      }
+  }
 
   /**
   *This is a method that be the first major block of code mainly just
   *for the title screen introduction before the real game starts
   *
-  *@param bins[] is a String array used to output to the user the options 
+  *@param races[] is a String array used to output to the user the races 
   *@return a boolean of whether or not they would like to continue the game
   */////////////////////////////////
   public static boolean start() {
@@ -212,21 +154,21 @@ class Main {
       cls();
 
       //output the starting information and objective
-      System.out.printf("%50s \n\n", "Sustainability Post-Consumption");
-      System.out.print("Objective: Organize the items that will be provided, into the correct bin. \n( ");
-      //output the different bin options
-      for (int i =0;i<bins.length;i++){
-        System.out.print(bins[i]+" ");
+      System.out.printf("%50s \n\n", "Facing Racial Bias in Society");
+      System.out.print("This is a learning tool to connect you to real world experiences of racism. These are the following groups that will be available \n( ");
+      //output the different options
+      for (int i =0;i<options.length-1;i++){
+        System.out.print(options[i]+", ");
       }
       System.out.println(")\n");
-      System.out.println("This is based off of the collection restrictions in the city of Toronto according to the offical website.\n");
-      System.out.print("To start, type \"play\" or \"skip\" to skip: ");
+      System.out.println("The data being used are stastics from the real world, from offical sources.\n");
+      System.out.print("To start, type \"continue\" or \"skip\" to skip: ");
       String start = input.nextLine();
       //use input to determine whether it's correct, and whether they want to skip or play
-      if (start.equals("play")) {
+      if (start.equalsIgnoreCase("continue")) {
             return play;// return true if they got out of loop
 
-      } else if (start.equals("skip")) {
+      } else if (start.equalsIgnoreCase("skip")) {
         return false; //return false and exit method
       }
     }
@@ -241,44 +183,20 @@ class Main {
   *@param items[][] is the 2d array of Strings with the items that will be the questions asked in the game to be matched to the correct bin.
   *@param running boolean will determine whether to skip this method(quit game)
   *@return the int score accumulated during the game
-  */////////////////////////////////
-  public static int game(String items[][], boolean running){
-    //exit with value 0 if false(skip)
-    if (!running){
-      return 0;
-    }
-    
-    Scanner input = new Scanner(System.in);//for inputs
-    int score = 0; //intialize score
-
-    //game loops through all the items in csv file
-    for (int i =1; i<items.length;i++){
-      cls();
-      System.out.println(" ");
-      System.out.println("Score: " + score); //output score
-      System.out.println(" "); //ask question
-      System.out.println("What number bin does "+items[i][0]+" belong to?");
-      System.out.print(displayChoice); //display choices
-
-      //collect input index and adjust for program
-      int in = input.nextInt()-1;
-      //reset and redo the loop if input is out of bounds
-      if (in>=bins.length||in<0){
-        i-=1;
-        continue;
-      }else{
-        //compare the input value with the value of the item to gain points 
-        if (bins[in].equals(items[i][1])){
-          score +=1; //gain point
-          System.out.println("Correct");
-        } else{
-          System.out.println("Wrong");
-        }
-      }
-      delay(1);//delay 1 second
-    }
-    return score;
-  }
+  // */////////////////////////////////
+  // public static int game(String items[][], boolean running){
+  
+  //   }catch (InputMismatchException e){
+  //     System.out.print("Invalid input, please try again.");
+  //     i -= 1; //adjust the index to retry the question
+  //     delay(1);
+  //     input.next(); //continue to collect input
+  //   }
+  //   delay(1);//delay 1 second
+  //   }
+   
+  //   return score;
+  // }
 
 
   /**
@@ -288,47 +206,24 @@ class Main {
   *@param score will take the players int score to save if the user wanted
   *@return true or false depending on if play wants to retry this game
   */////////////////////////////////
-  public static boolean endDisplay(int score)throws IOException{
-    Scanner input = new Scanner(System.in); //for inputs
+  // public static boolean endDisplay(int score)throws IOException{
+  //   Scanner input = new Scanner(System.in); //for inputs
 
-    //read the saved scores and output them 
-    String savedScores[][]=readArray("scores.csv");
-    //let them know if they qualify to have their name on the leaderboard
-    int highscore = scoreboard(savedScores,false);
-    if (score>highscore){
-      System.out.println("\nCongratulations! You made it on to the leaderboard  with a total score of "+score);
-    }
-    delay(1);
+  //   //read the saved scores and output them 
+  //   String savedScores[][]=readArray("scores.csv");
+  //   //let them know if they qualify to have their name on the leaderboard
 
-    //ask to whether to add score to file and their intials
-    String name = "    ";
-    while (name.length() > 3){
-      if (score == 0){
-         break; //if they didnt want to play
-      }
-      System.out.println("If you want to be included in the saved scores, type your intials up to 3 characters or \"NO\" to skip:");
-      name=input.nextLine();
-    }
-    //check whether they don't want to save, otherwise add score to csv file
-    if ((!name.equals("NO")||!name.equals("no"))&&score!=0){
-     addScore("scores.csv",name,score);
-    }
 
-    delay("saving",3);//output saving
-    cls();
-    //finally display the updated leaderboard
-    scoreboard(savedScores,true);
-
-    //ask whether to quit
-    System.out.print("\nIf you want to replay, press any button. Or type \"quit\" to exit the program: ");
-    String replay = input.nextLine();
-    //return whether they want to quit
-    if (replay.equals("quit")){
-      return false;
-    }else{
-      return true;
-    }
-  }
+  //   //ask whether to quit
+  //   System.out.print("\nIf you want to replay, press any button. Or type \"quit\" to exit the program: ");
+  //   String replay = input.nextLine();
+  //   //return whether they want to quit
+  //   if (replay.equalsIgnoreCase("quit")){
+  //     return false;
+  //   }else{
+  //     return true;
+  //   }
+  // }
 
   /**
   *This is a method is where we run all the other methods and 
@@ -339,48 +234,165 @@ class Main {
   public static void main(String[] args) throws IOException{
     boolean play=true;//set the loop
 
+
+    //used for choosing threads 
+    for (int i = 0; i < options.length; i++) {
+      displayOptions += (i+1) + ". " + options[i] +"\n";
+     }
+
+    //  display the different choices
+    for (int i = 0; i < choices.length; i++) {
+      displayChoices += (i+1) + ". " + choices[i] +"\n";
+     }
+
     while (play){
-      //used for outputing the options and matching to the items 
-      //display the different choices
-      for (int i = 0; i < bins.length; i++) {
-        displayChoice += (i+1) + ". " + bins[i] +"\n";
+      Scanner input = new Scanner(System.in);
+      //instantiate the social media platform
+      Platform platform = new Platform();
+
+      // //transition
+      // cls();
+      // delay("Loading",3);
+
+      // //starting screen
+      // boolean running = start();
+
+      //loading page
+      System.out.println(platform);
+      delay(2);
+      cls();
+      boolean noTopic = true;
+      String topic = "";
+      while (noTopic){
+        try{
+          //ask for what thread to read
+          System.out.println(displayOptions);//display choices
+          System.out.print("Please type the thread you would want to read:");
+          int topicNum = input.nextInt()-1;
+          input.nextLine();//for phantom inputs
+
+
+          cls();
+          //reset and redo the loop if input is out of bounds
+          if (topicNum>=options.length||topicNum<0){
+            continue;
+          }
+
+          topic = options[topicNum];
+          noTopic = false;
+
+        //catch the error that may occur from invalid input
+        }catch (InputMismatchException e){
+          System.out.print("Invalid input, please try again.");
+          delay(1);
+          input.next(); //continue to collect input
+        }
       }
 
+
+      //create the objects 
+      Threads thread = new Threads(topic);
+
+      Post forum = new Post(topic);
+      //ask for the todays date
+
+      //update the posts from csv
+      forum.addPost("story stuff experience");
+
+      cls();
+
+      boolean inThread = true;
+      while (inThread){
+
+      //enter game loop
+
+        for (int i =0; i < choices.length;i++){//change while loop?
+          try{
+            cls();
+            System.out.println(" ");
+            System.out.println(thread);
+            String oldForum = readArray(topic+"Thread.csv");//create the data for game
+
+            //System.out.println(oldForum); //change soon as it only shows the recent forum
+            //ask for the action   
+            System.out.println("\n\n\nEnter the number of the action you want to do");
+            System.out.println(displayChoices);//display choices
+
+          
+
+            //collect input index and adjust for program
+            int in = input.nextInt()-1;
+            input.nextLine();
+            
+            //reset and redo the loop if input is out of bounds
+            if (in>=choices.length||in<0){
+              i-=1; //set back the loop
+              continue;
+            }else{
+              //compare the input value with the value of the item to gain points 
+              if (choices[in].equalsIgnoreCase("login")){
+                System.out.print("Please enter your username: ");
+                String newName = input.nextLine();
+                //ask for username
+                forum.setName(newName);
+
+              } else if (choices[in].equalsIgnoreCase("post")){
+                cls();
+                String words="";
+                String enter;
+                
+                while(true){
+                  System.out.println("Please type up your post and type \"post\" on a new line to finish, or type \"exit\" to exit:");
+                  System.out.println(words);
+                  enter = input.nextLine();  
+                  if (enter.equalsIgnoreCase("post")){
+                    break;
+                  }else if(enter.equalsIgnoreCase("exit")){
+                    break; 
+                  }else{
+                    words+=enter + "\n";
+                    System.out.println(words);
+                    cls();
+                  }
+                                  
+                }
+                if (!(enter.equalsIgnoreCase("exit"))){
+                  forum.addPost(words);
+                  writeFile(topic+"Thread.csv",forum.getPost());
+                }
+
+              } else if (choices[in].equalsIgnoreCase("exit")){
+                inThread = false;// end the loop
+                break;
+              }
+              
+            }
+        //catch the error that may occur from invalid input
+        }catch (InputMismatchException e){
+          System.out.print("Invalid input, please try again.");
+          i -= 1; //adjust the index to retry the question
+          delay(1);
+          input.next(); //continue to collect input
+        }
+      }
+    }
       //transition
       cls();
-      delay("Loading",3);
+      delay("Fetching data",5);
 
-      //starting screen
-      boolean running = start();
-      String items[][] = readArray("items.csv");//create the items for game
 
-      //transition
-      cls();
-      delay("Compiling data",5);
-
-      //run the Game
-      int score = game(items,running);
-      cls();
-      delay("Remember to check with your local municipal on what goes in what bin!",5);      
+      delay("Insert fact!",5);      
+      cls(); 
       
-      play = endDisplay(score);//display end of game information
-
+      //play = endDisplay(score);//display end of game information
+      //ask if they want to quit
+  
       cls();
       delay("Thanks for playing!",3);      
     }
-    //direct to sources for Toronto
+
+    //direct to sources 
     cls();
-    System.out.println("Still not sure where a certain item goes? Check out the following sources:\n");
-    System.out.println("Recycling:");
-    System.out.println("https://www.toronto.ca/services-payments/recycling-organics-garbage/houses/what-goes-in-my-blue-bin/\n");
-
-    System.out.println("Compost:");
-    System.out.println("https://www.toronto.ca/services-payments/recycling-organics-garbage/houses/what-goes-in-my-green-bin/\n");
-
-    System.out.println("Garbage:");
-    System.out.println("https://www.toronto.ca/services-payments/recycling-organics-garbage/houses/what-goes-in-my-garbage-bin/\n");
-
-    System.out.println("Others:");
-    System.out.println("https://www.toronto.ca/services-payments/recycling-organics-garbage/houses/\n");
+    
   }
 }
